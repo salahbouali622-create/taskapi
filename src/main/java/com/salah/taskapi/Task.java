@@ -1,14 +1,22 @@
 package com.salah.taskapi;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotBlank(message = "title must not be blank")
+    @Size(max = 100, message = "title must be at most 100 characters")
     private String title;
+
+    @Size(max = 500, message = "description must be at most 500 characters")
     private String description;
+
     private boolean done;
 
     public Long getId() { return id; }

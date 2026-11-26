@@ -1,6 +1,7 @@
 package com.salah.taskapi;
 
-import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -8,43 +9,36 @@ import java.util.List;
 @RequestMapping("/api/tasks")
 public class TaskController {
 
-    private final TaskRepository repo;
+    private final TaskService service;
 
-    public TaskController(TaskRepository repo) {
-        this.repo = repo;
+    public TaskController(TaskService service) {
+        this.service = service;
     }
 
     @GetMapping
     public List<Task> all() {
-        return repo.findAll();
+        return service.findAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Task> one(@PathVariable Long id) {
-        return repo.findById(id).map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public Task one(@PathVariable Long id) {
+        return service.findById(id);
     }
 
     @PostMapping
-    public Task create(@RequestBody Task task) {
-        task.setId(null);
-        return repo.save(task);
+    @ResponseStatus(HttpStatus.CREATED)
+    public Task create(@Valid @RequestBody Task task) {
+        return service.create(task);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Task> update(@PathVariable Long id, @RequestBody Task data) {
-        return repo.findById(id).map(t -> {
-            t.setTitle(data.getTitle());
-            t.setDescription(data.getDescription());
-            t.setDone(data.isDone());
-            return ResponseEntity.ok(repo.save(t));
-        }).orElse(ResponseEntity.notFound().build());
+    public Task update(@PathVariable Long id, @Valid @RequestBody Task task) {
+        return service.update(id, task);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (!repo.existsById(id)) return ResponseEntity.notFound().build();
-        repo.deleteById(id);
-        return ResponseEntity.noContent().build();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        service.delete(id);
     }
 }
